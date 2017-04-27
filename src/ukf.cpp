@@ -13,10 +13,10 @@ using std::vector;
  */
 UKF::UKF() {
   ///* Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 1.0;
+  std_a_ = 1.5;
 
   ///* Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 0.7;
+  std_yawdd_ = 0.3;
 
   ///* Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -116,7 +116,7 @@ void UKF::Initialize(MeasurementPackage meas_package)
     double px = ro * cos(phi);
     double py = ro * sin(phi);
 
-    x_ << px, py, 0, 0, 0;
+    x_ << px, py, meas_package.raw_measurements_[2], 0, 0;
 
     P_ << 1, 0, 0, 0, 0,
           0, 1, 0, 0, 0,
@@ -128,8 +128,8 @@ void UKF::Initialize(MeasurementPackage meas_package)
   else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
     x_ << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1], 0, 0, 0;
 
-    P_ << std_laspx_, 0, 0, 0, 0,
-          0, std_laspy_, 0, 0, 0,
+    P_ << 1, 0, 0, 0, 0,
+          0, 1, 0, 0, 0,
           0, 0, 1, 0, 0,
           0, 0, 0, 1, 0,
           0, 0, 0, 0, 1;
