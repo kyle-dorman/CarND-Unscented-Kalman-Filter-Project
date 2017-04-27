@@ -135,6 +135,8 @@ int main(int argc, char* argv[]) {
   // used to compute the RMSE later
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
+  vector<double> nis_radar;
+  vector<double> nis_laser;
 
   // start filtering from the second frame (the speed is unknown in the first
   // frame)
@@ -179,6 +181,7 @@ int main(int argc, char* argv[]) {
 
       // NIS value
       out_file_ << ukf.NIS_laser_ << "\t";
+      nis_laser.push_back(ukf.NIS_laser_);
 
       // output the lidar sensor measurement px and py
       out_file_ << measurement_pack_list[k].raw_measurements_(0) << "\t";
@@ -190,6 +193,7 @@ int main(int argc, char* argv[]) {
 
       // NIS value
       out_file_ << ukf.NIS_radar_ << "\t";
+      nis_radar.push_back(ukf.NIS_radar_);
 
       // output radar measurement in cartesian coordinates
       float ro = measurement_pack_list[k].raw_measurements_(0);
@@ -222,6 +226,8 @@ int main(int argc, char* argv[]) {
   // compute the accuracy (RMSE)
   Tools tools;
   cout << "RMSE" << endl << tools.CalculateRMSE(estimations, ground_truth) << endl;
+  tools.NISPercentage(nis_laser, 2, "laser");
+  tools.NISPercentage(nis_radar, 3, "radar");
 
   // close files
   if (out_file_.is_open()) {

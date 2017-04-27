@@ -35,6 +35,15 @@ public:
   ///* time when the state is true, in us
   long long time_us_;
 
+  ///* Weights of sigma points
+  VectorXd weights_;
+
+  ///* the current NIS for radar
+  double NIS_radar_;
+
+  ///* the current NIS for laser
+  double NIS_laser_;
+
   ///* Process noise standard deviation longitudinal acceleration in m/s^2
   double std_a_;
 
@@ -54,10 +63,7 @@ public:
   double std_radphi_;
 
   ///* Radar measurement noise standard deviation radius change in m/s
-  double std_radrd_ ;
-
-  ///* Weights of sigma points
-  VectorXd weights_;
+  double std_radrd_;
 
   ///* State dimension
   int n_x_;
@@ -66,13 +72,7 @@ public:
   int n_aug_;
 
   ///* Sigma point spreading parameter
-  double lambda_;
-
-  ///* the current NIS for radar
-  double NIS_radar_;
-
-  ///* the current NIS for laser
-  double NIS_laser_;
+  int lambda_;
 
   /**
    * Constructor
@@ -89,6 +89,13 @@ public:
    * @param meas_package The latest measurement data of either radar or laser
    */
   void ProcessMeasurement(MeasurementPackage meas_package);
+
+private:
+  /**
+   * Initializes state with first measurement.
+   * @param meas_package the measurement.
+   */
+  void Initialize(MeasurementPackage meas_package);
 
   /**
    * Prediction Predicts sigma points, the state, and the state covariance
@@ -108,6 +115,47 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+  /**
+   * Calculated the updated sigma points. 
+   */
+  MatrixXd AugmentedSigmaPoints();
+
+  /**
+   * Predicts the sigma points change based on time since last measurement.
+   * @param delta_t The time change in seconds.
+   */
+  void PredictSigmaPoints(double delta_t);
+
+  /**
+   * Based on the saved predicted sigma points, calculate the new mean and covariance.
+   */
+  void PredictMeanAndCovariance();
+
+  /**
+   * Generic function to update the sate based on the measurement.
+   * @param n_z Degrees of freedom.
+   * @param Zsig sigma points in measurement space.
+   * @param R measurement noise covariance matrix.
+   * @param meas_package The measurement at k+1.
+   * @param NIS pointer to NIS value to update (laser or radar).
+   */
+  void UpdateState(int n_z, MatrixXd Zsig, MatrixXd R, MeasurementPackage meas_package, double* NIS);
+
+  /**
+   * Calculate the difference between the actual and predicted values.
+   *  If it is a radar measurement, normalize the angle.
+   * @param x measured x val.
+   * @param x_pred predicted x val.
+   * @param sensorType Laser or Radar.
+   */
+  VectorXd XDiff(VectorXd x, VectorXd x_pred, MeasurementPackage::SensorType sensorType);
+
+  /**
+   * Normalizes nangle between (-)pi and pi.
+   * @param angle angle in radians.
+   */
+  double NormalizeAngle(double angle);
 };
 
 #endif /* UKF_H */

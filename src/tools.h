@@ -20,6 +20,8 @@ public:
   */
   Eigen::VectorXd CalculateRMSE(const std::vector<Eigen::VectorXd> &estimations, const std::vector<Eigen::VectorXd> &ground_truth);
 
+  void NISPercentage(const std::vector<double> &nis, int deg_freedom, std::string name);
+
 };
 
 #endif /* TOOLS_H_ */
